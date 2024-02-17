@@ -92,42 +92,22 @@ int main(void)
   MX_SPI1_Init();
   /* USER CODE BEGIN 2 */
   CANSPI_Initialize();
+  txMessage.frame.idType = dSTANDARD_CAN_MSG_ID_2_0B;
+  txMessage.frame.id = 0x0A;
+  txMessage.frame.dlc = 8;
+  for (int i = 0; i < 8; ++i) {
+	  txMessage.array[i + CAN_MSG_DATA0] = i;
+  }
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
   while (1)
   {
-	  if(CANSPI_Receive(&rxMessage))
-	  	      {
-	  	        txMessage.frame.idType = rxMessage.frame.idType;
-	  	        txMessage.frame.id = rxMessage.frame.id;
-	  	        txMessage.frame.dlc = rxMessage.frame.dlc;
-	  	        txMessage.frame.data0++;
-	  	        txMessage.frame.data1 = rxMessage.frame.data1;
-	  	        txMessage.frame.data2 = rxMessage.frame.data2;
-	  	        txMessage.frame.data3 = rxMessage.frame.data3;
-	  	        txMessage.frame.data4 = rxMessage.frame.data4;
-	  	        txMessage.frame.data5 = rxMessage.frame.data5;
-	  	        txMessage.frame.data6 = rxMessage.frame.data6;
-	  	        txMessage.frame.data7 = rxMessage.frame.data7;
-	  	        CANSPI_Transmit(&txMessage);
-	  	      }
 
-	  	      txMessage.frame.idType = dSTANDARD_CAN_MSG_ID_2_0B;
-	  	      txMessage.frame.id = 0x0A;
-	  	      txMessage.frame.dlc = 8;
-	  	      txMessage.frame.data0 = 0;
-	  	      txMessage.frame.data1 = 1;
-	  	      txMessage.frame.data2 = 2;
-	  	      txMessage.frame.data3 = 3;
-	  	      txMessage.frame.data4 = 4;
-	  	      txMessage.frame.data5 = 5;
-	  	      txMessage.frame.data6 = 6;
-	  	      txMessage.frame.data7 = 7;
-	  	      CANSPI_Transmit(&txMessage);
-
-	  	      HAL_Delay(1000);
+	  CANSPI_Transmit(&txMessage);
+	  txMessage.frame.data0++;
+	  HAL_Delay(1000);
     /* USER CODE END WHILE */
 
     /* USER CODE BEGIN 3 */
@@ -224,12 +204,23 @@ static void MX_GPIO_Init(void)
 /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOD_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(CAN_CS_GPIO_Port, CAN_CS_Pin, GPIO_PIN_SET);
+
+  /*Configure GPIO pin : LED_Pin */
+  GPIO_InitStruct.Pin = LED_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(LED_GPIO_Port, &GPIO_InitStruct);
 
   /*Configure GPIO pin : CAN_CS_Pin */
   GPIO_InitStruct.Pin = CAN_CS_Pin;
